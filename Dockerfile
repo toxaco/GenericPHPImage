@@ -9,19 +9,25 @@ echo "deb http://deb.debian.org/debian stretch-updates main non-free " >> /etc/a
 echo "deb http://deb.debian.org/debian stretch-backports main non-free" >> /etc/apt/sources.list && \
 echo "deb http://http.us.debian.org/debian stable main contrib non-free" >> /etc/apt/sources.list
 
-# Install node and npm
-RUN apt-get update && apt-get install -my wget gnupg
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
-RUN apt-get install -y nodejs
-RUN npm i -g webpack && npm i -g typescript && npm i -g yarn
+# Install node and npm (v8.x Specific)
+# RUN apt-get update && apt-get install -my wget gnupg
+# RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
+# RUN apt-get install -y nodejs
+# RUN npm i -g webpack && npm i -g typescript && npm i -g yarn
 
 # Install specific version of Node (8.11.3)
-ENV NVM_DIR /usr/local/nvm
-RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.1/install.sh | bash
-ENV NODE_VERSION v8.11.3 
-RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use --delete-prefix $NODE_VERSION"
-ENV NODE_PATH $NVM_DIR/versions/node/$NODE_VERSION/lib/node_modules
-ENV PATH      $NVM_DIR/versions/node/$NODE_VERSION/bin:$PATH
+# ENV NVM_DIR /usr/local/nvm
+# RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.1/install.sh | bash
+# ENV NODE_VERSION v8.11.3 
+# RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use --delete-prefix $NODE_VERSION"
+# ENV NODE_PATH $NVM_DIR/versions/node/$NODE_VERSION/lib/node_modules
+# ENV PATH      $NVM_DIR/versions/node/$NODE_VERSION/bin:$PATH
+
+# Install node and npm (v12.x Specific)
+RUN apt-get update && apt-get install -my wget gnupg
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get install -y nodejs
+RUN npm i -g webpack && npm i -g typescript && npm i -g yarn
 
 # PDFTK
 RUN mkdir /usr/share/man/man1 
