@@ -79,7 +79,8 @@ RUN docker-php-ext-install -j$(nproc) \
         gd \
         soap \
         intl \
-        imap
+        imap \ 
+        sockets
 
 RUN yes '' | pecl install -f mcrypt
 RUN echo "extension=mcrypt.so" > /usr/local/etc/php/conf.d/mcrypt.ini
