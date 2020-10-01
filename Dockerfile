@@ -66,6 +66,7 @@ RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-di
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl
 RUN docker-php-ext-configure intl
 
+# mailparse
 RUN pecl install mailparse
 RUN docker-php-ext-enable opcache mailparse
 
@@ -79,9 +80,16 @@ RUN docker-php-ext-install -j$(nproc) \
         gd \
         soap \
         intl \
-        imap \ 
-        sockets
+        imap
 
+# MongoDb (required by: composer require doctrine/mongodb-odm-bundle)
+RUN docker-php-ext-install -j$(nproc) sockets
+RUN apt-get install -y libssl-dev
+RUN yes '' | pecl install -f pcov
+RUN yes '' | pecl install -f mongodb 
+RUN docker-php-ext-enable pcov mongodb
+
+# MCrypt extension
 RUN yes '' | pecl install -f mcrypt
 RUN echo "extension=mcrypt.so" > /usr/local/etc/php/conf.d/mcrypt.ini
 RUN apt-get clean -y
