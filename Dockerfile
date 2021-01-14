@@ -1,39 +1,24 @@
-FROM php:7.4-fpm-alpine3.12
+FROM php:7.4-fpm
 
 WORKDIR /src
 
 # Install sys deps
-RUN echo "deb http://deb.debian.org/debian stretch main multiverse non-free"  > /etc/apt/sources.list && \
-echo "deb http://security.debian.org/debian-security stretch/updates main non-free" >> /etc/apt/sources.list && \
-echo "deb http://deb.debian.org/debian stretch-updates main non-free " >> /etc/apt/sources.list && \
-echo "deb http://deb.debian.org/debian stretch-backports main non-free" >> /etc/apt/sources.list && \
-echo "deb http://http.us.debian.org/debian stable main contrib non-free" >> /etc/apt/sources.list
+# RUN echo "deb http://deb.debian.org/debian stretch main multiverse non-free"  > /etc/apt/sources.list && \
+# echo "deb http://security.debian.org/debian-security stretch/updates main non-free" >> /etc/apt/sources.list && \
+# echo "deb http://deb.debian.org/debian stretch-updates main non-free " >> /etc/apt/sources.list && \
+# echo "deb http://deb.debian.org/debian stretch-backports main non-free" >> /etc/apt/sources.list && \
+# echo "deb http://http.us.debian.org/debian stable main contrib non-free" >> /etc/apt/sources.list
 
-# Install node and npm (v8.x Specific)
-# RUN apt-get update && apt-get install -my wget gnupg
-# RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
-# RUN apt-get install -y nodejs
-# RUN npm i -g webpack && npm i -g typescript && npm i -g yarn
-
-# Install specific version of Node (8.11.3)
-# ENV NVM_DIR /usr/local/nvm
-# RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.1/install.sh | bash
-# ENV NODE_VERSION v8.11.3 
-# RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use --delete-prefix $NODE_VERSION"
-# ENV NODE_PATH $NVM_DIR/versions/node/$NODE_VERSION/lib/node_modules
-# ENV PATH      $NVM_DIR/versions/node/$NODE_VERSION/bin:$PATH
+# PDFTK
+COPY ./pdftk/pdftk-all.jar /pdftk.jar
+COPY ./pdftk/pdftk.sh /usr/bin/pdftk
+RUN chmod +x /usr/bin/pdftk
 
 # Install node and npm (v12.x Specific)
 RUN apt-get update && apt-get install -my wget gnupg
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 RUN apt-get install -y nodejs
 RUN npm i -g webpack && npm i -g typescript && npm i -g yarn
-
-# PDFTK
-RUN mkdir /usr/share/man/man1 
-COPY pdftk/pdftk-all.jar /pdftk.jar
-COPY pdftk/pdftk.sh /usr/bin/pdftk
-RUN chmod +x /usr/bin/pdftk
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -55,14 +40,17 @@ RUN apt-get update && apt-get install -y \
         libicu-dev \
         g++ \
         poppler-utils \
-        openjdk-8-jdk \
+        # openjdk-8-jdk \
         libgd3 \
         libgd-dev \
         libc-client-dev \
-        libkrb5-dev
+        libkrb5-dev \
+        poppler-utils \
+        # msttcorefonts-installer \
+        fontconfig
 
 # Install + Configure PHP libraries
-RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
+RUN docker-php-ext-configure gd
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl
 RUN docker-php-ext-configure intl
 
@@ -108,9 +96,9 @@ RUN pecl install apcu
 RUN echo "extension=apcu.so" > /usr/local/etc/php/conf.d/apcu.ini
 
 # Install composer
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-RUN chmod +x /usr/local/bin/composer
-RUN composer global require hirak/prestissimo
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php --install-dir=/bin/ --filename=composer \
+    chmod +x /bin/composer && rm -rf composer-setup.php
 
 # Configure sudoers for better dev experience ;-)
 RUN echo "Defaults umask=0002" >> /etc/sudoers \
